@@ -1,0 +1,34 @@
+# A `wait: false` dependency fails after the main deploy commands have started.
+#
+#   database (10s, wait: true) ──> main deploy commands
+#   reports (60s, wait: false, FAILS)
+#
+# Run from this directory:
+#   sh verify.sh reset
+#   DEPS_E2E_REPO=<repo url> ./okteto deploy --dependencies -f okteto-late-failure.yml
+#   sh verify.sh late-failure
+#
+# Expected:
+#   - the main deploy commands run and finish (they don't wait for reports)
+#   - `okteto deploy` then waits for reports and fails with an error naming `reports`
+#   - the deployment status is "error" and its message names `reports`
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      DEP_NAME: database
+      SLEEP_SECONDS: '10'
+  reports:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      DEP_NAME: reports
+      SLEEP_SECONDS: '60'
+      FAIL: 'true'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main sh dependency/dependency.sh

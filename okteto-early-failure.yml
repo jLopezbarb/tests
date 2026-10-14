@@ -1,0 +1,51 @@
+# A dependency fails before the main deploy commands start.
+#
+#   database (30s) ──┬──> backend (wait: true)
+#   messaging (5s, FAILS) ┘
+#   database ──────────> analytics
+#
+# Run from this directory:
+#   sh verify.sh reset
+#   DEPS_E2E_REPO=<repo url> ./okteto deploy --dependencies -f okteto-early-failure.yml
+#   sh verify.sh early-failure
+#
+# Expected:
+#   - `okteto deploy` fails and the error names `messaging` and why it failed
+#   - database is already running when messaging fails, so it is allowed to finish
+#   - nothing new is scheduled after the failure: backend and analytics never start
+#   - the main deploy commands never run
+#   - the deployment status is "error" and its message names `messaging`
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      DEP_NAME: database
+      SLEEP_SECONDS: '30'
+  messaging:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      DEP_NAME: messaging
+      SLEEP_SECONDS: '5'
+      FAIL: 'true'
+  backend:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: [database, messaging]
+    wait: true
+    variables:
+      DEP_NAME: backend
+  analytics:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: database
+    variables:
+      DEP_NAME: analytics
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main sh dependency/dependency.sh

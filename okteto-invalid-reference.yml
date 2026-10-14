@@ -1,0 +1,13 @@
+# Invalid graph: unknown reference and self-dependency.
+# Expected: `okteto deploy` fails before anything is deployed. Only the first error
+# (in alphabetical order) is reported: `api` depends on `cache`, which is not defined.
+# Remove `api` to see the self-dependency error for `worker`.
+dependencies:
+  api:
+    repository: https://github.com/okteto/e2e-dependency
+    depends_on: [cache]
+  worker:
+    repository: https://github.com/okteto/e2e-dependency
+    depends_on: worker
+deploy:
+  - echo "must not run"

@@ -1,0 +1,52 @@
+# Happy path for dependency execution order (the example from the product spec).
+#
+#   database (20s) ──┬──> backend (10s, wait: true) ──> main deploy commands
+#   messaging (40s) ─┘
+#   database ─────────> analytics (90s, wait: false)
+#
+# Run from this directory, then check the ordering:
+#   sh verify.sh reset
+#   DEPS_E2E_REPO=<repo url> ./okteto deploy --dependencies
+#   sh verify.sh success
+#
+# Expected:
+#   - database and messaging start in parallel
+#   - analytics starts once database ends, without waiting for messaging
+#   - backend starts once database and messaging both end
+#   - main starts once backend ends, and ends before analytics
+#   - `okteto deploy` returns only after analytics ends
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      DEP_NAME: database
+      SLEEP_SECONDS: '20'
+  messaging:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      DEP_NAME: messaging
+      SLEEP_SECONDS: '40'
+  backend:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: [database, messaging]
+    wait: true
+    variables:
+      DEP_NAME: backend
+      SLEEP_SECONDS: '10'
+  analytics:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: database
+    variables:
+      DEP_NAME: analytics
+      SLEEP_SECONDS: '90'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

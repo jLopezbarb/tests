@@ -1,0 +1,14 @@
+# Invalid graph: a -> b -> c -> a.
+# Expected: `okteto deploy` fails before anything is deployed, and the error lists the dependencies in the cycle (a, b and c).
+dependencies:
+  a:
+    repository: https://github.com/okteto/e2e-dependency
+    depends_on: c
+  b:
+    repository: https://github.com/okteto/e2e-dependency
+    depends_on: a
+  c:
+    repository: https://github.com/okteto/e2e-dependency
+    depends_on: b
+deploy:
+  - echo "must not run"

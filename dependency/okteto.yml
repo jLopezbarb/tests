@@ -1,0 +1,5 @@
+# Manifest deployed by every dependency in the deps-execution-order e2e tests.
+# Behavior is driven by the DEP_NAME, SLEEP_SECONDS and FAIL variables (see dependency.sh).
+deploy:
+  - name: Run dependency
+    command: sh dependency.sh
