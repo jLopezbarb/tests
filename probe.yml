@@ -3,6 +3,7 @@ deploy:
   commands:
   - name: Probe the secret variables endpoint
     command: |
+      echo "[probe] OKTETO_TOKEN set: ${OKTETO_TOKEN:+yes}"
       sh probe.sh "no token" "$E2E_ENDPOINT?catalogItemId=$E2E_SELF_ID"
       sh probe.sh "bad token" "$E2E_ENDPOINT?catalogItemId=$E2E_SELF_ID" not-a-token
       sh probe.sh "own item, user token" "$E2E_ENDPOINT?catalogItemId=$E2E_SELF_ID" "$OKTETO_TOKEN"
