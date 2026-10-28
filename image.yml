@@ -1,0 +1,11 @@
+# Opts into remote execution with an image, so it runs remotely even in local mode
+deploy:
+  image: busybox:1.37
+  commands:
+  - name: Show catalog variables
+    command: sh show.sh deploy
+destroy:
+  image: busybox:1.37
+  commands:
+  - name: Show catalog variables
+    command: sh show.sh destroy

@@ -1,0 +1,11 @@
+# Opts out of remote execution: the local-execution guard must stop it
+deploy:
+  remote: false
+  commands:
+  - name: Show catalog variables
+    command: sh show.sh deploy
+destroy:
+  remote: false
+  commands:
+  - name: Show catalog variables
+    command: sh show.sh destroy

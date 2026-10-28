@@ -1,0 +1,15 @@
+# Probes the internal endpoint from inside the remote runner. Prints status lines only.
+deploy:
+  commands:
+  - name: Probe the secret variables endpoint
+    command: |
+      sh probe.sh "no token" "$E2E_ENDPOINT?catalogItemId=$E2E_SELF_ID"
+      sh probe.sh "bad token" "$E2E_ENDPOINT?catalogItemId=$E2E_SELF_ID" not-a-token
+      sh probe.sh "own item, user token" "$E2E_ENDPOINT?catalogItemId=$E2E_SELF_ID" "$OKTETO_TOKEN"
+      sh probe.sh "no catalogItemId" "$E2E_ENDPOINT" "$OKTETO_TOKEN"
+      sh probe.sh "other item, user token" "$E2E_ENDPOINT?catalogItemId=$E2E_OTHER_ID" "$OKTETO_TOKEN"
+      sh probe.sh "unknown item, user token" "$E2E_ENDPOINT?catalogItemId=does-not-exist" "$OKTETO_TOKEN"
+destroy:
+  commands:
+  - name: Nothing
+    command: echo destroy

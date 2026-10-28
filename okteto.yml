@@ -1,0 +1,9 @@
+# Remote by the installation's default execution mode
+deploy:
+  commands:
+  - name: Show catalog variables
+    command: sh show.sh deploy
+destroy:
+  commands:
+  - name: Show catalog variables
+    command: sh show.sh destroy
