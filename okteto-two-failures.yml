@@ -1,0 +1,43 @@
+# Two awaited dependencies fail in parallel.
+#
+#   a (5s, FAILS) ──> c (wait: true)
+#   b (10s, FAILS)
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-two-failures.yml
+#   sh verify.sh two-failures
+#
+# Expected:
+#   - the lines of a and b are interleaved; a ends with its "[a]  x  ..." line, and b keeps running until it fails
+#   - c never starts, and the main deploy commands never run
+#   - the deploy error lists both failures, and c as not deployed, as the last line of "Deploy dependencies"
+dependencies:
+  a:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      DEP_NAME: a
+      SLEEP_SECONDS: '5'
+      FAIL: 'true'
+  b:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      DEP_NAME: b
+      SLEEP_SECONDS: '10'
+      FAIL: 'true'
+  c:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: a
+    wait: true
+    variables:
+      DEP_NAME: c
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

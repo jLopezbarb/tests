@@ -9,7 +9,7 @@
 #   sh verify.sh early-failure
 #
 # Expected:
-#   - database is shown first and finishes; messaging is shown next, from its beginning, and ends with its error
+#   - the lines of database and messaging are interleaved; messaging ends with its error and database finishes
 #   - nothing new starts after the failure: backend and analytics never start, and the main deploy commands never run
 #   - `okteto deploy` fails naming messaging and listing backend and analytics as not deployed
 #   - the status is "error", and in the UI the error is the last line of the "Deploy dependencies" stage

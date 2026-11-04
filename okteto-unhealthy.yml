@@ -4,13 +4,15 @@
 #   ./okteto deploy --dependencies -f okteto-unhealthy.yml
 #   sh verify.sh unhealthy
 #
-# Expected: the deploy fails before the main deploy commands with "repository 'database' deployed with errors"
+# Expected: the deploy fails before the main deploy commands, with "repository 'database' deployed with errors"
+# or with the 2m timeout of database, depending on how the instance reports a pod that can't pull its image
 dependencies:
   database:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
     manifest: dependency/okteto.yml
     wait: true
+    timeout: 2m
     variables:
       UNHEALTHY: 'true'
       DEP_NAME: 'database'

@@ -4,9 +4,9 @@
 # Inputs (env vars, passed as dependency `variables`):
 #   DEP_NAME       required, name of the node (used for the workload and markers)
 #   SLEEP_SECONDS  optional, simulated work before deploying (default 0). It prints a line every second,
-#                  so the logs show whether a dependency is replayed from its beginning or followed live
+#                  so the lines of the dependencies running at the same time interleave
 #   FAIL           optional, "true" makes the deploy fail after sleeping (default false)
-#   UNHEALTHY      optional, "true" deploys a container that exits right away, so its pods never get healthy
+#   UNHEALTHY      optional, "true" deploys an image that doesn't exist, so its pods never get healthy
 #   RECEIVED       optional, printed as is: set it to a variable of another dependency to check that it arrives
 #
 # It creates two marker ConfigMaps, deps-e2e-<name>-start and deps-e2e-<name>-end.
@@ -38,9 +38,9 @@ if [ "${FAIL}" = "true" ]; then
   exit 1
 fi
 
-COMMAND='["nginx", "-g", "daemon off;"]'
+IMAGE="nginx:alpine"
 if [ "${UNHEALTHY}" = "true" ]; then
-  COMMAND='["sh", "-c", "echo unhealthy on purpose; exit 1"]'
+  IMAGE="ghcr.io/okteto/this-image-does-not-exist:never"
 fi
 
 kubectl apply -f - <<YAML
@@ -61,8 +61,7 @@ spec:
       terminationGracePeriodSeconds: 1
       containers:
       - name: nginx
-        image: nginx:alpine
-        command: ${COMMAND}
+        image: ${IMAGE}
         ports:
         - containerPort: 80
 YAML

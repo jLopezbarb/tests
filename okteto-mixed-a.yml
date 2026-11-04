@@ -1,7 +1,7 @@
 # Repositories that list each other, the mixed case: a lists b with wait: false, and b lists a with wait: true.
 #
 #   sh verify.sh reset
-#   ./okteto deploy --dependencies --name mixed-a -f mixed/a.yml
+#   ./okteto deploy --dependencies --name mixed-a -f okteto-mixed-a.yml
 #   sh verify.sh mixed
 #
 # Expected: a schedules b and runs its commands for a minute; b waits for a ("Repository 'mixed-a' is already being deployed...") and then deploys
@@ -9,10 +9,10 @@ dependencies:
   mixed-b:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
-    manifest: mixed/b.yml
+    manifest: okteto-mixed-b.yml
     variables:
       DEPS_E2E_REPO: ${DEPS_E2E_REPO}
       DEPS_E2E_BRANCH: ${DEPS_E2E_BRANCH:-main}
 deploy:
   - name: Main deploy
-    command: DEP_NAME=mixed-a SLEEP_SECONDS=60 sh ../dependency/dependency.sh
+    command: DEP_NAME=mixed-a SLEEP_SECONDS=60 sh dependency/dependency.sh

@@ -7,7 +7,7 @@
 #   sh verify.sh chain
 #
 # Expected:
-#   - a, b and c are deployed and shown in turn, then the main deploy commands
+#   - a, b and c are deployed one after the other, then the main deploy commands
 #   - b prints "b: received 'a'" (a variable of a) and c prints "c: received 'b'"
 dependencies:
   a:

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Checks the execution order recorded by dependency.sh after an `okteto deploy`.
-# Usage: sh verify.sh reset|success|early-failure|late-failure|chain|diamond|single-scheduled|failure-before-scheduled|reserved-variable|unhealthy|timeout|mixed
+# Usage: sh verify.sh reset|success|early-failure|late-failure|chain|diamond|single-scheduled|failure-before-scheduled|reserved-variable|unhealthy|timeout|mixed|two-failures
 # Run `reset` before each scenario so markers from a previous run don't leak in.
 # Uses the current kubectl context/namespace (run `okteto kubeconfig` first).
 set -e
@@ -118,6 +118,16 @@ case "$SCENARIO" in
     ;;
   timeout)
     absent database-end
+    absent main-start
+    ;;
+  two-failures)
+    # both start in parallel and fail
+    exists a-start
+    exists b-start
+    absent a-end
+    absent b-end
+    # c depends on a, and the main commands don't run
+    absent c-start
     absent main-start
     ;;
   mixed)

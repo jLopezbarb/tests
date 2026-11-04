@@ -1,13 +1,13 @@
-# The manifest of b in the mixed case (see mixed/a.yml)
+# The manifest of b in the mixed case (see okteto-mixed-a.yml)
 dependencies:
   mixed-a:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
-    manifest: mixed/a.yml
+    manifest: okteto-mixed-a.yml
     wait: true
     variables:
       DEPS_E2E_REPO: ${DEPS_E2E_REPO}
       DEPS_E2E_BRANCH: ${DEPS_E2E_BRANCH:-main}
 deploy:
   - name: Main deploy
-    command: DEP_NAME=mixed-b SLEEP_SECONDS=5 sh ../dependency/dependency.sh
+    command: DEP_NAME=mixed-b SLEEP_SECONDS=5 sh dependency/dependency.sh

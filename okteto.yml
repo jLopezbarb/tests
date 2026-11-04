@@ -11,8 +11,8 @@
 # Expected:
 #   - database and messaging start in parallel; analytics is scheduled once database ends;
 #     backend starts once database and messaging end
-#   - one stage, "Deploy dependencies", shown in this order: database, analytics, messaging, backend.
-#     messaging is replayed from its first line once database and analytics have been shown
+#   - one stage, "Deploy dependencies": the lines of database and messaging are interleaved, each one with its
+#     [name] prefix, and each awaited dependency starts with "[name] Deploying dependency '<name>'"
 #   - analytics shows a single line, "[analytics] Repository 'analytics' scheduled for deployment"
 #   - the main deploy starts after backend, and `okteto deploy` returns without waiting for analytics
 dependencies:

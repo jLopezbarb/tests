@@ -9,7 +9,7 @@
 #
 # Expected:
 #   - b and c start together once a ends
-#   - they are shown as a, b, c, d: c finishes while b is shown, and it's replayed in full after b
+#   - the lines of b and c are interleaved, each one with its [name] prefix
 dependencies:
   a:
     repository: ${DEPS_E2E_REPO}
