@@ -1,0 +1,48 @@
+# A diamond: b and c run in parallel after a, and d waits for both.
+#
+#   a (5s) ──┬──> b (20s) ──┬──> d (5s, wait: true) ──> main deploy commands
+#            └──> c (10s) ──┘
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-diamond.yml
+#   sh verify.sh diamond
+#
+# Expected:
+#   - b and c start together once a ends
+#   - they are shown as a, b, c, d: c finishes while b is shown, and it's replayed in full after b
+dependencies:
+  a:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      SLEEP_SECONDS: '5'
+      DEP_NAME: 'a'
+  b:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: a
+    variables:
+      SLEEP_SECONDS: '20'
+      DEP_NAME: 'b'
+  c:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: a
+    variables:
+      SLEEP_SECONDS: '10'
+      DEP_NAME: 'c'
+  d:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: [b, c]
+    wait: true
+    variables:
+      SLEEP_SECONDS: '5'
+      DEP_NAME: 'd'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

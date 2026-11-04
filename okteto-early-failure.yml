@@ -4,33 +4,31 @@
 #   messaging (5s, FAILS) ┘
 #   database ──────────> analytics
 #
-# Run from this directory:
 #   sh verify.sh reset
-#   DEPS_E2E_REPO=<repo url> ./okteto deploy --dependencies -f okteto-early-failure.yml
+#   ./okteto deploy --dependencies -f okteto-early-failure.yml
 #   sh verify.sh early-failure
 #
 # Expected:
-#   - `okteto deploy` fails and the error names `messaging` and why it failed
-#   - database is already running when messaging fails, so it is allowed to finish
-#   - nothing new is scheduled after the failure: backend and analytics never start
-#   - the main deploy commands never run
-#   - the deployment status is "error" and its message names `messaging`
+#   - database is shown first and finishes; messaging is shown next, from its beginning, and ends with its error
+#   - nothing new starts after the failure: backend and analytics never start, and the main deploy commands never run
+#   - `okteto deploy` fails naming messaging and listing backend and analytics as not deployed
+#   - the status is "error", and in the UI the error is the last line of the "Deploy dependencies" stage
 dependencies:
   database:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
     manifest: dependency/okteto.yml
     variables:
-      DEP_NAME: database
       SLEEP_SECONDS: '30'
+      DEP_NAME: 'database'
   messaging:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
     manifest: dependency/okteto.yml
     variables:
-      DEP_NAME: messaging
       SLEEP_SECONDS: '5'
       FAIL: 'true'
+      DEP_NAME: 'messaging'
   backend:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
@@ -38,14 +36,14 @@ dependencies:
     depends_on: [database, messaging]
     wait: true
     variables:
-      DEP_NAME: backend
+      DEP_NAME: 'backend'
   analytics:
     repository: ${DEPS_E2E_REPO}
     branch: ${DEPS_E2E_BRANCH:-main}
     manifest: dependency/okteto.yml
     depends_on: database
     variables:
-      DEP_NAME: analytics
+      DEP_NAME: 'analytics'
 deploy:
   - name: Main deploy
-    command: DEP_NAME=main sh dependency/dependency.sh
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

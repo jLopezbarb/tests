@@ -1,0 +1,18 @@
+# Repositories that list each other with wait: true: a known limitation, as before 3.25.
+#
+#   ./okteto deploy --dependencies --name mutual-a -f mutual-wait/a.yml
+#
+# Expected: blocked until the 1m timeout of the dependencies, then it fails
+dependencies:
+  mutual-b:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: mutual-wait/b.yml
+    wait: true
+    timeout: 1m
+    variables:
+      DEPS_E2E_REPO: ${DEPS_E2E_REPO}
+      DEPS_E2E_BRANCH: ${DEPS_E2E_BRANCH:-main}
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=mutual-a SLEEP_SECONDS=5 sh ../dependency/dependency.sh

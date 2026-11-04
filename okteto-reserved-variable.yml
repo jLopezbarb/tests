@@ -1,0 +1,28 @@
+# A wait: false dependency that the CLI can't schedule: it uses a reserved variable name.
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-reserved-variable.yml
+#   sh verify.sh reserved-variable
+#
+# Expected:
+#   - "[reports] OKTETO_NAMESPACE is reserved variable name" ends the block of reports
+#   - the main deploy commands never run, and the deploy fails with that error under "Deploy dependencies"
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      SLEEP_SECONDS: '5'
+      DEP_NAME: 'database'
+  reports:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      OKTETO_NAMESPACE: 'other'
+      DEP_NAME: 'reports'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

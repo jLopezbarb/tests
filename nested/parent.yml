@@ -1,0 +1,13 @@
+# The manifest of the parent dependency of nested/okteto.yml
+dependencies:
+  child:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      SLEEP_SECONDS: '10'
+      DEP_NAME: 'child'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=parent SLEEP_SECONDS=5 sh ../dependency/dependency.sh

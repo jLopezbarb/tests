@@ -1,0 +1,20 @@
+# A single dependency with wait: false.
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-single-scheduled.yml
+#   sh verify.sh single-scheduled
+#
+# Expected:
+#   - a single line, "[reports] Repository 'reports' scheduled for deployment"
+#   - the main deploy commands start right away, and `okteto deploy` returns without waiting for reports
+dependencies:
+  reports:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      SLEEP_SECONDS: '60'
+      DEP_NAME: 'reports'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

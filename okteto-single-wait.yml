@@ -1,0 +1,17 @@
+# A single dependency with wait: true.
+#
+#   ./okteto deploy --dependencies -f okteto-single-wait.yml
+#
+# Expected: "[database] ..." lines, the "Deploy dependencies" stage, and then the main deploy commands
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      SLEEP_SECONDS: '10'
+      DEP_NAME: 'database'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

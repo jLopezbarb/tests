@@ -1,11 +1,11 @@
 #!/bin/sh
 # Checks the execution order recorded by dependency.sh after an `okteto deploy`.
-# Usage: sh verify.sh reset|success|early-failure|late-failure
+# Usage: sh verify.sh reset|success|early-failure|late-failure|chain|diamond|single-scheduled|failure-before-scheduled|reserved-variable|unhealthy|timeout|mixed
 # Run `reset` before each scenario so markers from a previous run don't leak in.
 # Uses the current kubectl context/namespace (run `okteto kubeconfig` first).
 set -e
 
-SCENARIO="${1:?usage: verify.sh reset|success|early-failure|late-failure}"
+SCENARIO="${1:?usage: verify.sh reset|success|early-failure|late-failure|chain|diamond|single-scheduled|failure-before-scheduled|reserved-variable|unhealthy|timeout|mixed}"
 FAILED=0
 
 ts() {
@@ -57,15 +57,16 @@ case "$SCENARIO" in
     # database and messaging run in parallel: each starts before the other ends
     before database-start messaging-end
     before messaging-start database-end
-    # analytics waits only for database
+    # analytics is scheduled once database ends, while messaging is still running
     before database-end analytics-start
     before analytics-start messaging-end
     # backend waits for both
     before database-end backend-start
     before messaging-end backend-start
-    # main waits for backend (wait: true), not for analytics (wait: false)
+    # main waits for backend (wait: true) and the schedule of analytics
     before backend-end main-start
-    before main-end analytics-end
+    # run right after `okteto deploy` returns: it didn't wait for analytics
+    absent analytics-end
     ;;
   early-failure)
     absent messaging-end
@@ -80,6 +81,49 @@ case "$SCENARIO" in
     before database-end main-start
     exists main-end
     absent reports-end
+    ;;
+  chain)
+    before a-end b-start
+    before b-end c-start
+    before c-end main-start
+    ;;
+  diamond)
+    before a-end b-start
+    before a-end c-start
+    # b and c run in parallel
+    before b-start c-end
+    before c-start b-end
+    before b-end d-start
+    before c-end d-start
+    before d-end main-start
+    ;;
+  single-scheduled)
+    exists main-end
+    # run right after `okteto deploy` returns: it didn't wait for reports
+    absent reports-end
+    ;;
+  failure-before-scheduled)
+    absent database-end
+    absent analytics-start
+    absent main-start
+    ;;
+  reserved-variable)
+    absent reports-start
+    absent main-start
+    ;;
+  unhealthy)
+    # the dependency deploys, but its pods never get healthy, so the main commands don't run
+    exists database-end
+    absent main-start
+    ;;
+  timeout)
+    absent database-end
+    absent main-start
+    ;;
+  mixed)
+    # run once mixed-b is deployed: it waits for mixed-a before running its commands
+    before mixed-a-end mixed-b-start
+    exists mixed-b-end
     ;;
   *)
     echo "unknown scenario: $SCENARIO"

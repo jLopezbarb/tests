@@ -1,0 +1,28 @@
+# A wait: false dependency depends on one that fails.
+#
+#   database (5s, FAILS) ──> analytics (wait: false)
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-failure-before-scheduled.yml
+#   sh verify.sh failure-before-scheduled
+#
+# Expected: analytics is never scheduled, and the error lists it as not deployed
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      SLEEP_SECONDS: '5'
+      FAIL: 'true'
+      DEP_NAME: 'database'
+  analytics:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: database
+    variables:
+      DEP_NAME: 'analytics'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

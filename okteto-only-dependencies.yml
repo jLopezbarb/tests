@@ -1,0 +1,21 @@
+# A manifest with dependencies and no deploy commands.
+#
+#   ./okteto deploy --dependencies -f okteto-only-dependencies.yml
+#
+# Expected: the "Deploy dependencies" stage, and the deploy ends as deployed
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      SLEEP_SECONDS: '5'
+      DEP_NAME: 'database'
+  reports:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    variables:
+      SLEEP_SECONDS: '5'
+      DEP_NAME: 'reports'

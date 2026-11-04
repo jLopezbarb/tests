@@ -1,5 +1,6 @@
 #!/bin/sh
-# Rebuilds ./okteto from the worktree branch.
+# Builds ./okteto from a checkout of the okteto repo: OKTETO_SRC=<path to the checkout> ./build.sh
 set -e
-make -C "/Users/javi/.herdr/worktrees/okteto/jlo-deps-execution-order" build BINDIR="/tmp/okteto-deps-execution-order"
-"/tmp/okteto-deps-execution-order/okteto" version
+: "${OKTETO_SRC:?OKTETO_SRC must point to a checkout of github.com/okteto/okteto}"
+make -C "${OKTETO_SRC}" build BINDIR="$(pwd)"
+./okteto version

@@ -1,0 +1,42 @@
+# A wait: false dependency in the chain of wait: true ones is awaited too.
+#
+#   a (10s, wait: true) ──> b (10s, wait: false) ──> c (5s, wait: true) ──> main deploy commands
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-chain.yml
+#   sh verify.sh chain
+#
+# Expected:
+#   - a, b and c are deployed and shown in turn, then the main deploy commands
+#   - b prints "b: received 'a'" (a variable of a) and c prints "c: received 'b'"
+dependencies:
+  a:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      SLEEP_SECONDS: '10'
+      DEP_NAME: 'a'
+  b:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: a
+    variables:
+      SLEEP_SECONDS: '10'
+      RECEIVED: ${OKTETO_DEPENDENCY_A_VARIABLE_DEP_NAME}
+      DEP_NAME: 'b'
+  c:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    depends_on: b
+    wait: true
+    variables:
+      SLEEP_SECONDS: '5'
+      RECEIVED: ${OKTETO_DEPENDENCY_B_VARIABLE_DEP_NAME}
+      DEP_NAME: 'c'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

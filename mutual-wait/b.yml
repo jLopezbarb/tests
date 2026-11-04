@@ -1,0 +1,14 @@
+# The manifest of b in the mutual wait case (see mutual-wait/a.yml)
+dependencies:
+  mutual-a:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: mutual-wait/a.yml
+    wait: true
+    timeout: 1m
+    variables:
+      DEPS_E2E_REPO: ${DEPS_E2E_REPO}
+      DEPS_E2E_BRANCH: ${DEPS_E2E_BRANCH:-main}
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=mutual-b SLEEP_SECONDS=5 sh ../dependency/dependency.sh

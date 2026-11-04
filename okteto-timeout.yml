@@ -1,0 +1,20 @@
+# An awaited dependency takes longer than its timeout.
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-timeout.yml
+#   sh verify.sh timeout
+#
+# Expected: the deploy fails before the main deploy commands, naming database and its 20s timeout
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    timeout: 20s
+    variables:
+      SLEEP_SECONDS: '60'
+      DEP_NAME: 'database'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh

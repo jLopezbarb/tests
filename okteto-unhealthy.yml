@@ -1,0 +1,19 @@
+# An awaited dependency deploys, but its pods never get healthy.
+#
+#   sh verify.sh reset
+#   ./okteto deploy --dependencies -f okteto-unhealthy.yml
+#   sh verify.sh unhealthy
+#
+# Expected: the deploy fails before the main deploy commands with "repository 'database' deployed with errors"
+dependencies:
+  database:
+    repository: ${DEPS_E2E_REPO}
+    branch: ${DEPS_E2E_BRANCH:-main}
+    manifest: dependency/okteto.yml
+    wait: true
+    variables:
+      UNHEALTHY: 'true'
+      DEP_NAME: 'database'
+deploy:
+  - name: Main deploy
+    command: DEP_NAME=main SLEEP_SECONDS=5 sh dependency/dependency.sh
