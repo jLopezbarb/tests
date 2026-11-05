@@ -2,7 +2,7 @@
 
 Scenarios to test manifest `dependencies` against an Okteto instance, looking at the terminal and at the UI.
 
-`okteto deploy` deploys the dependencies in parallel following `depends_on`, and shows them under one stage, `Deploy dependencies`. The lines of the dependencies running at the same time are interleaved, and every line is prefixed with `[name]`. Each awaited dependency starts with `[name] Deploying dependency '<name>'`. The deploy waits for the dependencies with `wait: true`, their `depends_on` chain and any dependency another one lists in `depends_on`. The rest are only scheduled. The deploy commands start when the awaited dependencies are deployed and the rest are scheduled.
+`okteto deploy` deploys the dependencies in parallel following `depends_on`, and shows them under one stage, `Deploy dependencies`. The lines of the dependencies running at the same time are interleaved, and every line is prefixed with `[name]`. The stage starts with a single `Deploying dependencies` line. The deploy waits for the dependencies with `wait: true`, their `depends_on` chain and any dependency another one lists in `depends_on`. The rest are only scheduled. The deploy commands start when the awaited dependencies are deployed and the rest are scheduled.
 
 ## Setup
 
