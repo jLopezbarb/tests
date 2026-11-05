@@ -2,7 +2,7 @@
 
 Scenarios to test manifest `dependencies` against an Okteto instance, looking at the terminal and at the UI.
 
-`okteto deploy` deploys the dependencies in parallel following `depends_on`, and shows them under one stage, `Deploy dependencies`. The lines of the dependencies running at the same time are interleaved, and every line is prefixed with `[name]`. The stage starts with a single `Deploying dependencies` line. The deploy waits for the dependencies with `wait: true`, their `depends_on` chain and any dependency another one lists in `depends_on`. The rest are only scheduled. The deploy commands start when the awaited dependencies are deployed and the rest are scheduled.
+`okteto deploy` deploys the dependencies in parallel following `depends_on`, and shows them under one stage, `Deploying dependencies`. The lines of the dependencies running at the same time are interleaved, and every line is prefixed with `[name]`. The stage starts with a single `Deploying dependencies` line. The deploy waits for the dependencies with `wait: true`, their `depends_on` chain and any dependency another one lists in `depends_on`. The rest are only scheduled. The deploy commands start when the awaited dependencies are deployed and the rest are scheduled.
 
 ## Setup
 
@@ -25,13 +25,13 @@ Run `sh verify.sh reset` before each scenario, so that markers left by a previou
 | Scenario | Command | Check | Expected |
 |---|---|---|---|
 | Spec example | `./okteto deploy --dependencies` | `success` | The lines of database and messaging are interleaved. analytics is a single line, `[analytics] Repository 'analytics' scheduled for deployment`. The main deploy starts after backend, and the command returns without waiting for analytics. Repeat with `--wait`: only database, messaging and backend are health-checked. |
-| Early failure | `./okteto deploy --dependencies -f okteto-early-failure.yml` | `early-failure` | messaging's block ends with its error. backend and analytics never start, the main deploy never runs, and the status is `error`. In the UI the error is the last line of `Deploy dependencies`. |
+| Early failure | `./okteto deploy --dependencies -f okteto-early-failure.yml` | `early-failure` | messaging's block ends with its error. backend and analytics never start, the main deploy never runs, and the status is `error`. In the UI the error is the last line of `Deploying dependencies`. |
 | Late failure | `./okteto deploy --dependencies -f okteto-late-failure.yml` | `late-failure` | reports is only scheduled. `okteto deploy` succeeds right after the commands. About a minute later the UI shows the deploy of reports, on its own, as failed. |
 | Chain | `./okteto deploy --dependencies -f okteto-chain.yml` | `chain` | b (`wait: false`) is awaited because c needs it. a, b and c are deployed one after the other. b prints `b: received 'a'` and c prints `c: received 'b'`. |
 | Diamond | `./okteto deploy --dependencies -f okteto-diamond.yml` | `diamond` | b and c run in parallel, and their lines are interleaved. |
-| One awaited | `./okteto deploy --dependencies -f okteto-single-wait.yml` | | `[database]` lines under `Deploy dependencies`, then the main deploy. |
+| One awaited | `./okteto deploy --dependencies -f okteto-single-wait.yml` | | `[database]` lines under `Deploying dependencies`, then the main deploy. |
 | One scheduled | `./okteto deploy --dependencies -f okteto-single-scheduled.yml` | `single-scheduled` | A single `[reports] … scheduled for deployment` line. The commands start right away, and the command doesn't wait for reports. |
-| Only dependencies | `./okteto deploy --dependencies -f okteto-only-dependencies.yml` | | The `Deploy dependencies` stage, and the deploy ends as deployed. |
+| Only dependencies | `./okteto deploy --dependencies -f okteto-only-dependencies.yml` | | The `Deploying dependencies` stage, and the deploy ends as deployed. |
 | Failure before a scheduled one | `./okteto deploy --dependencies -f okteto-failure-before-scheduled.yml` | `failure-before-scheduled` | analytics is never scheduled, and the error lists it as not deployed. |
 | Can't be scheduled | `./okteto deploy --dependencies -f okteto-reserved-variable.yml` | `reserved-variable` | reports' block ends with `OKTETO_NAMESPACE is reserved variable name`. The main deploy never runs. |
 | Unhealthy | `./okteto deploy --dependencies -f okteto-unhealthy.yml` | `unhealthy` | database deploys an image that doesn't exist. It fails before the commands, with `repository 'database' deployed with errors` or with its 2m timeout. |
@@ -51,8 +51,8 @@ Run `sh verify.sh reset` before each scenario, so that markers left by a previou
 ## Output and entry points
 
 - **TTY:** the default. A spinner shows the dependency being shown, and the build progress of the main deploy is the TTY one.
-- **Plain and JSON:** `--log-output plain` and `--log-output json`. One `Deploy dependencies` stage, and every line prefixed.
-- **UI:** deploy the spec example from the UI, or with `--remote`. One `Deploy dependencies` stage, no dependency split across stages, and, when it fails, the error as the last line of the stage.
+- **Plain and JSON:** `--log-output plain` and `--log-output json`. One `Deploying dependencies` stage, and every line prefixed.
+- **UI:** deploy the spec example from the UI, or with `--remote`. One `Deploying dependencies` stage, no dependency split across stages, and, when it fails, the error as the last line of the stage.
 - **`okteto up`** on a dev environment that isn't deployed, and **`okteto test`**: the same output, and neither waits for `wait: false` dependencies.
 
 ## Cleanup
